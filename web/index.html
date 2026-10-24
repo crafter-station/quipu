@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quipu · ¿cuánto del presupuesto público ya se gastó?</title>
+<meta name="description" content="Revisa si tu municipalidad o tu región ya gastó el dinero público que le tocaba este año.">
+<style>
+:root{--bg:#faf8f4;--fg:#1d1a16;--mut:#6b655c;--line:#e4dfd5;--card:#fff;--acc:#b4531f;--verde:#2f7d4f;--ambar:#b7791f;--rojo:#b83232}
+@media (prefers-color-scheme:dark){:root{--bg:#16130f;--fg:#f1ece3;--mut:#a39b8d;--line:#2f2a22;--card:#1e1a15;--acc:#e08a52;--verde:#5ec08a;--ambar:#e0b24f;--rojo:#ef7676}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:720px;margin:0 auto;padding:28px 16px 64px}
+header{display:flex;align-items:baseline;gap:10px;margin-bottom:28px}
+header b{font-size:22px;letter-spacing:-.02em}
+header span{color:var(--mut);font-size:14px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.15;letter-spacing:-.02em;margin:0 0 8px;font-weight:650}
+.sub{color:var(--mut);margin:0 0 20px}
+.buscar{position:relative}
+input{width:100%;padding:15px 16px;font:inherit;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg)}
+input:focus{outline:2px solid var(--acc);outline-offset:1px}
+.lista{position:absolute;left:0;right:0;top:100%;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.lista button{display:block;width:100%;text-align:left;padding:11px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;cursor:pointer}
+.lista button:last-child{border:0}.lista button:hover,.lista button:focus{background:var(--bg)}
+.lista small{display:block;color:var(--mut);font-size:13px}
+.atajos{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.atajos button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:7px 12px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+.atajos button:hover{border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:24px}
+.card h2{margin:0 0 2px;font-size:20px;line-height:1.25}
+.card .donde{color:var(--mut);font-size:14px;margin:0 0 18px}
+.grande{font-size:clamp(44px,12vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.frase{margin:10px 0 14px}
+.barra{height:14px;background:var(--line);border-radius:99px;overflow:hidden;position:relative}
+.barra i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.marca{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg)}
+.leyenda{display:flex;justify-content:space-between;gap:8px;color:var(--mut);font-size:13px;margin-top:6px}
+.sem{display:flex;gap:12px;align-items:flex-start;margin-top:20px;padding:14px;border-radius:12px;background:var(--bg)}
+.punto{flex:none;width:14px;height:14px;border-radius:50%;margin-top:6px}
+.verde{background:var(--verde)}.ambar{background:var(--ambar)}.rojo{background:var(--rojo)}
+.sem p{margin:0}.sem small{color:var(--mut);display:block;margin-top:4px;font-size:13px;line-height:1.4}
+h3{font-size:15px;margin:26px 0 10px;letter-spacing:.01em}
+svg{width:100%;height:auto;display:block}
+.fn{display:grid;grid-template-columns:1fr auto;gap:2px 12px;margin-bottom:12px;font-size:15px}
+.fn .barra{grid-column:1/-1;height:8px}.fn span:last-child{color:var(--mut);text-align:right}
+.pie{color:var(--mut);font-size:13px;margin-top:36px;line-height:1.5}
+.pie a{color:inherit}
+.cuadro{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:var(--mut)}
+.cuadro b{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+</style>
+</head>
+<body>
+<main>
+<header><b>quipu</b><span>cuentas claras del presupuesto público</span></header>
+
+<h1>¿Tu municipalidad ya gastó lo que le tocaba?</h1>
+<p class="sub">Escribe el nombre de tu distrito, provincia o región y mira cuánto del presupuesto del año ya se usó.</p>
+
+<div class="buscar">
+  <input id="q" type="search" placeholder="Ej.: Acoria, Huancavelica, Cusco…" autocomplete="off" aria-label="Buscar municipalidad o región">
+  <div id="lista" class="lista" hidden></div>
+</div>
+<div class="atajos" id="atajos"></div>
+
+<div id="resultado" aria-live="polite"></div>
+
+<p class="pie" id="pie"></p>
+</main>
+
+<script type="module">
+import { crear, buscar, avance, agregar, filtrar, semaforo, porFuncion, soles, pct, MESES, NIVELES } from "../src/core.mjs";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const titulo = (s) => s.toLowerCase().replace(/(^|[\s(-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase()).replace(/\b(De|Del|La|Las|Los|Y)\b/g, (m) => m.toLowerCase());
+let q;
+
+try {
+  q = crear(await (await fetch("../data/quipu.json")).json());
+} catch {
+  $("resultado").innerHTML = '<div class="card">No pude cargar los datos. Abre esta página desde un servidor (por ejemplo <code>node serve.mjs</code>).</div>';
+  throw new Error("sin datos");
+}
+
+const anio = q.datos.anios.at(-1), previo = String(Number(anio) - 1), hasta = q.mesCerrado;
+$("pie").innerHTML = `Fuente: <a href="https://datosabiertos.mef.gob.pe">datos abiertos del MEF</a> (Consulta Amigable de Gasto), actualizados al ${q.datos.corte}. “Gastado” es el gasto <i>devengado</i> (ya comprometido y reconocido) y “presupuesto” es el PIM, el presupuesto vigente del año. Se cuenta hasta ${MESES[hasta - 1]} porque el mes en curso aún no termina. quipu no es un sitio oficial del Estado.`;
+
+const ATAJOS = [["Todo el país", null], ["Huancavelica", "huancavelica"], ["Cusco", "cusco"], ["Puno", "puno"], ["Ayacucho", "ayacucho"], ["Lima", "lima"]];
+$("atajos").innerHTML = ATAJOS.map(([t, v]) => `<button data-v="${v ?? ""}">${t}</button>`).join("");
+$("atajos").onclick = (e) => { const v = e.target.dataset?.v; if (v === undefined) return; v ? mostrarDepto(v) : mostrarPais(); };
+
+function lineas(a, b) {
+  const W = 640, H = 220, L = 38, B = 24, T = 10, R = 8;
+  const acum = (arr) => arr.reduce((o, x, i) => (o.push((o[i - 1] ?? 0) + x), o), []);
+  const sa = acum(a.porMes).slice(0, hasta).map((v) => (a.pim ? (100 * v) / a.pim : 0));
+  const sb = b ? acum(b.porMes).map((v) => (b.pim ? (100 * v) / b.pim : 0)) : null;
+  const max = Math.max(100, ...(sb ?? []), ...sa);
+  const x = (i) => L + (i * (W - L - R)) / 11, y = (v) => T + (H - T - B) * (1 - v / max);
+  const path = (s) => s.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const grid = [0, 25, 50, 75, 100].map((g) => `<line x1="${L}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(g) + 4}" text-anchor="end" font-size="11" fill="var(--mut)">${g}%</text>`).join("");
+  const meses = MESES.map((m, i) => (i % 2 === 0 ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--mut)">${m}</text>` : "")).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Avance acumulado mes a mes">${grid}${meses}${sb ? `<path d="${path(sb)}" fill="none" stroke="var(--mut)" stroke-width="2" stroke-dasharray="5 4"/>` : ""}<path d="${path(sa)}" fill="none" stroke="var(--acc)" stroke-width="3"/></svg>
+  <div class="cuadro"><span><b style="background:var(--acc)"></b>${anio}</span>${sb ? `<span><b style="background:var(--mut)"></b>${previo}</span>` : ""}</div>`;
+}
+
+function tarjeta({ titulo: t, donde, ents, ent }) {
+  const a = agregar(q, ents, anio, hasta), p = agregar(q, ents, previo, hasta);
+  const sem = ent ? semaforo(q, ent, anio, hasta) : null;
+  const mismo = p.pct !== null && a.pct !== null ? a.pct - p.pct : null;
+  const dif = mismo === null ? "" : Math.abs(mismo) < 0.5 ? `Va igual que el año pasado a esta fecha (${pct(p.pct)}).` : mismo > 0 ? `Va ${mismo.toFixed(1).replace(".", ",")} puntos por delante del año pasado a esta fecha (${pct(p.pct)}).` : `Va ${Math.abs(mismo).toFixed(1).replace(".", ",")} puntos por detrás del año pasado a esta fecha (${pct(p.pct)}).`;
+  const fs = ent ? porFuncion(q, ent, anio).filter((f) => f.pim > 0).slice(0, 6) : [];
+  const SEMT = { verde: "Está entre las que más avanzaron", ambar: "Está en el término medio", rojo: "Está entre las que menos avanzaron" };
+  return `<section class="card">
+    <h2>${esc(t)}</h2><p class="donde">${esc(donde)}</p>
+    <div class="grande">${a.pct === null ? "—" : Math.round(a.pct) + " %"}</div>
+    <p class="frase">${a.pim ? `Ha gastado <b>${soles(a.devengado)}</b> de los <b>${soles(a.pim)}</b> que tiene este año.` : "Esta entidad no tiene presupuesto este año."} ${esc(dif)}</p>
+    <div class="barra"><i style="width:${Math.min(a.pct ?? 0, 100)}%"></i></div>
+    <div class="leyenda"><span>0 %</span><span>hasta ${MESES[hasta - 1]} ${anio}</span><span>100 %</span></div>
+    ${sem ? `<div class="sem"><span class="punto ${sem.color}"></span><div><p><b>${SEMT[sem.color]}</b> de las ${sem.de.toLocaleString("es-PE")} entidades del mismo nivel de gobierno: ${sem.mejorQue} % de ellas ha avanzado menos.</p><small>Es una comparación, no un veredicto: algunas entidades tienen obras grandes que se pagan al final del año. Sirve para saber dónde preguntar.</small></div></div>` : ""}
+    <h3>Avance mes a mes</h3>${lineas(a, p.pim ? p : null)}
+    ${fs.length ? `<h3>En qué se gasta</h3>${fs.map((f) => `<div class="fn"><span>${esc(titulo(f.nombre))}</span><span>${soles(f.pim)} · ${pct(f.pct)}</span><div class="barra"><i style="width:${Math.min(f.pct ?? 0, 100)}%"></i></div></div>`).join("")}` : ""}
+  </section>`;
+}
+
+function mostrarPais() { $("resultado").innerHTML = tarjeta({ titulo: "Todo el Perú", donde: "Gobierno Nacional, regionales y locales", ents: q.entidades }); }
+function mostrarDepto(d) {
+  const ents = filtrar(q, { depto: d });
+  $("resultado").innerHTML = tarjeta({ titulo: titulo(d), donde: "Todas las entidades del departamento: Gobierno Nacional con obras ahí, regional y municipalidades", ents });
+}
+function mostrarEnt(e) {
+  const donde = [NIVELES[e.nivel], e.nivel === "GL" ? `${titulo(e.provincia)}, ${titulo(e.depto)}` : e.depto && e.nivel === "GR" ? titulo(e.depto) : ""].filter(Boolean).join(" · ");
+  $("resultado").innerHTML = tarjeta({ titulo: titulo(e.nombre), donde, ents: [e], ent: e });
+  $("lista").hidden = true;
+  scrollTo({ top: $("resultado").offsetTop - 20, behavior: "smooth" });
+}
+
+let sugeridas = [];
+$("q").addEventListener("input", () => {
+  const t = $("q").value;
+  if (t.trim().length < 2) { $("lista").hidden = true; return; }
+  sugeridas = buscar(q, t).sort((a, b) => (a.nivel === "GN") - (b.nivel === "GN") || a.nombre.length - b.nombre.length).slice(0, 8);
+  $("lista").innerHTML = sugeridas.map((e, i) => `<button data-i="${i}">${esc(titulo(e.nombre))}<small>${NIVELES[e.nivel]} · ${esc(titulo(e.depto || ""))}</small></button>`).join("") || '<button disabled>Sin resultados. Prueba con solo el nombre del distrito.</button>';
+  $("lista").hidden = false;
+});
+$("lista").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) mostrarEnt(sugeridas[b.dataset.i]); };
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter" && sugeridas[0]) mostrarEnt(sugeridas[0]); });
+document.addEventListener("click", (e) => { if (!e.target.closest(".buscar")) $("lista").hidden = true; });
+
+mostrarPais();
+</script>
+</body>
+</html>
