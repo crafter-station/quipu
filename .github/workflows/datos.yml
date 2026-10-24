@@ -1,0 +1,41 @@
+name: datos
+
+# El MEF actualiza el gasto cada día. Con dos corridas por semana alcanza para la web y
+# evita llenar el repositorio de commits de datos (cada corrida cambia ~6 MB de JSON).
+on:
+  schedule:
+    - cron: "0 16 * * 1,4" # lunes y jueves, 11:00 hora de Lima
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Bajar datos del MEF
+        run: python -I scripts/bajar.py
+      - name: Resumir gasto
+        run: python -I scripts/agregar.py $(ls data/raw/*-Gasto-*.zip | sort -r)
+      - name: Exportar
+        run: |
+          python -I scripts/exportar.py
+          python -I scripts/obras.py data/raw/detalle-inversiones.csv "$(date -u +%F)"
+      - name: Probar
+        run: node --test test/core.test.mjs
+      - name: Guardar si cambió
+        run: |
+          git config user.name "quipu-bot"
+          git config user.email "quipu-bot@users.noreply.github.com"
+          git add data/quipu.json data/obras.json
+          git diff --cached --quiet || git commit -m "datos: $(date -u +%F)"
+          git push

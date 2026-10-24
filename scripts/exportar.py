@@ -12,8 +12,11 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-corte = sys.argv[1]  # fecha de los datos, AAAA-MM-DD
-mes_cerrado = int(sys.argv[2])  # último mes completo del año más reciente
+from datetime import date
+
+# Fecha de los datos (AAAA-MM-DD) y último mes completo del año más reciente. Por defecto: hoy y el mes anterior.
+corte = sys.argv[1] if len(sys.argv) > 1 else date.today().isoformat()
+mes_cerrado = int(sys.argv[2]) if len(sys.argv) > 2 else max(int(corte[5:7]) - 1, 1)
 
 c = sqlite3.connect(RAIZ / "data" / "quipu.db")
 NIVEL = {"GOBIERNO NACIONAL": "GN", "GOBIERNOS REGIONALES": "GR", "GOBIERNOS LOCALES": "GL"}

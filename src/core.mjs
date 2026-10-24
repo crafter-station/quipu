@@ -7,7 +7,17 @@ export function normalizar(s) {
   return String(s ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 }
 
-export function crear(datos) {
+/** Solo letras A-Z y espacios. Igual que `doblar` en scripts/obras.py (une nombres con y sin mala codificación). */
+export function doblar(s, nivel = "") {
+  let t = String(s ?? "").toUpperCase().split(" - ")[0];
+  if (nivel === "GR") t = t.replace(/DEL DEPARTAMENTO DE |DE LA PROVINCIA CONSTITUCIONAL DEL /g, "");
+  return t.replace(/[^A-Z ]/g, "").replace(/\s+/g, " ").trim();
+}
+
+/** Llave con la que obras.json guarda las obras de una entidad. */
+export const claveObras = (e) => `${e.nivel}|${doblar(e.nombre, e.nivel)}${e.nivel === "GL" ? `|${doblar(e.depto)}` : ""}`;
+
+export function crear(datos, obras = null) {
   const porEntidad = new Map();
   for (const [id, nivel, pliego, ejecutora, depto, provincia, distrito] of datos.ejec) {
     // Los gobiernos locales no traen pliego: la entidad es la municipalidad (su ejecutora).
@@ -18,7 +28,12 @@ export function crear(datos) {
     }
     porEntidad.get(k).ids.push(id);
   }
-  return { datos, entidades: [...porEntidad.values()], mesCerrado: datos.mesCerrado };
+  const entidades = [...porEntidad.values()];
+  // Si dos municipalidades tienen la misma llave, no se asignan obras (no se sabría de cuál son).
+  const usos = new Map();
+  for (const e of entidades) usos.set(claveObras(e), (usos.get(claveObras(e)) ?? 0) + 1);
+  for (const e of entidades) e.obras = usos.get(claveObras(e)) === 1 ? (obras?.obras?.[claveObras(e)] ?? []) : [];
+  return { datos, obras, entidades, mesCerrado: datos.mesCerrado };
 }
 
 /** Presupuesto y devengado por mes de una entidad en un año. dev[0] = enero. */
@@ -107,6 +122,11 @@ export function porFuncion(q, ent, anio) {
     .map(([cod, a]) => ({ cod, nombre: q.datos.funciones[cod] ?? cod, ...a, pct: a.pim > 0 ? (100 * a.devCerrado) / a.pim : null }))
     .filter((f) => f.pim > 0 || f.dev > 0)
     .sort((a, b) => b.pim - a.pim);
+}
+
+/** Obras (inversiones) con más presupuesto del año de una entidad. fisico/fin en %, null si no hay dato. */
+export function obrasDe(ent) {
+  return ent.obras.map(([codigo, nombre, pim, dev, fisico, fin, ultimoDev, costo]) => ({ codigo, nombre, pim, dev, fisico, fin, ultimoDev, costo, pct: pim > 0 ? (100 * dev) / pim : null }));
 }
 
 export const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];

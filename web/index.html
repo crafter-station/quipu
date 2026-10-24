@@ -3,150 +3,274 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>quipu · ¿cuánto del presupuesto público ya se gastó?</title>
-<meta name="description" content="Revisa si tu municipalidad o tu región ya gastó el dinero público que le tocaba este año.">
+<title>quipu · cuentas claras del presupuesto público</title>
+<meta name="description" content="Escribe el nombre de tu municipalidad o región y mira cuánto del dinero público de este año ya se gastó, en qué y en qué obras.">
+<meta property="og:title" content="quipu · cuentas claras del presupuesto público">
+<meta property="og:description" content="¿Tu municipalidad ya gastó lo que le tocaba este año? Revísalo en un minuto.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b4531f'/%3E%3Cpath d='M6 9h20' stroke='%23faf5ec' stroke-width='2.5'/%3E%3Cpath d='M11 9v15M16 9v10M21 9v13' stroke='%23faf5ec' stroke-width='2.5'/%3E%3Ccircle cx='11' cy='24' r='2.5' fill='%23faf5ec'/%3E%3Ccircle cx='16' cy='19' r='2.5' fill='%23faf5ec'/%3E%3Ccircle cx='21' cy='22' r='2.5' fill='%23faf5ec'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#faf8f4;--fg:#1d1a16;--mut:#6b655c;--line:#e4dfd5;--card:#fff;--acc:#b4531f;--verde:#2f7d4f;--ambar:#b7791f;--rojo:#b83232}
-@media (prefers-color-scheme:dark){:root{--bg:#16130f;--fg:#f1ece3;--mut:#a39b8d;--line:#2f2a22;--card:#1e1a15;--acc:#e08a52;--verde:#5ec08a;--ambar:#e0b24f;--rojo:#ef7676}}
+:root{
+  color-scheme:light dark;
+  --bg:oklch(.972 .012 85);--fg:oklch(.22 .02 60);--mut:oklch(.45 .02 60);--card:oklch(.995 .005 85);
+  --line:oklch(.3 .03 60 / .14);--hilo:oklch(.3 .03 60 / .16);--acc:oklch(.52 .14 45);--acc-fg:oklch(.99 .005 85);
+  --verde:oklch(.5 .12 150);--ambar:oklch(.62 .13 80);--rojo:oklch(.5 .17 27);
+  --serif:"Fraunces",Georgia,serif;--sans:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:oklch(.17 .012 60);--fg:oklch(.96 .008 85);--mut:oklch(.74 .015 80);--card:oklch(.21 .014 60);
+  --line:oklch(1 0 0 / .1);--hilo:oklch(1 0 0 / .14);--acc:oklch(.74 .13 55);--acc-fg:oklch(.17 .012 60);
+  --verde:oklch(.78 .13 150);--ambar:oklch(.82 .12 85);--rojo:oklch(.74 .15 27);
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:720px;margin:0 auto;padding:28px 16px 64px}
-header{display:flex;align-items:baseline;gap:10px;margin-bottom:28px}
-header b{font-size:22px;letter-spacing:-.02em}
-header span{color:var(--mut);font-size:14px}
-h1{font-size:clamp(26px,6vw,36px);line-height:1.15;letter-spacing:-.02em;margin:0 0 8px;font-weight:650}
-.sub{color:var(--mut);margin:0 0 20px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;position:relative;background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:absolute;inset:0 0 auto 0;height:240px;pointer-events:none;z-index:-1;
+  background:linear-gradient(to bottom,transparent,var(--bg)),repeating-linear-gradient(90deg,transparent 0 22px,var(--line) 22px 23px)}
+main{max-width:760px;margin:0 auto;padding:22px 16px 72px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:44px}
+.logo{font:600 24px/1 var(--serif);letter-spacing:-.02em;display:flex;align-items:center;gap:9px;color:var(--fg);text-decoration:none}
+.logo svg{width:26px;height:26px}
+nav a{font:500 13px var(--mono);color:var(--mut);text-decoration:none;margin-left:16px}
+nav a:hover{color:var(--fg)}
+h1{font:400 clamp(32px,7.4vw,52px)/1.08 var(--serif);letter-spacing:-.025em;margin:0 0 12px}
+h1 em{font-style:italic;color:var(--acc)}
+.sub{color:var(--mut);margin:0 0 24px;max-width:52ch}
 .buscar{position:relative}
-input{width:100%;padding:15px 16px;font:inherit;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg)}
-input:focus{outline:2px solid var(--acc);outline-offset:1px}
-.lista{position:absolute;left:0;right:0;top:100%;margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-.lista button{display:block;width:100%;text-align:left;padding:11px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;cursor:pointer}
-.lista button:last-child{border:0}.lista button:hover,.lista button:focus{background:var(--bg)}
+.buscar input{width:100%;padding:16px 18px 16px 48px;font:inherit;font-size:17px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--fg);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23999' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:16px center}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.lista{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;z-index:5;box-shadow:0 12px 32px oklch(0 0 0 / .12)}
+.lista button{display:block;width:100%;text-align:left;padding:12px 18px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;cursor:pointer}
+.lista button:last-child{border:0}.lista button:hover,.lista button:focus-visible{background:var(--bg)}
 .lista small{display:block;color:var(--mut);font-size:13px}
 .atajos{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
-.atajos button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:7px 12px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
-.atajos button:hover{border-color:var(--acc)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:24px}
-.card h2{margin:0 0 2px;font-size:20px;line-height:1.25}
-.card .donde{color:var(--mut);font-size:14px;margin:0 0 18px}
-.grande{font-size:clamp(44px,12vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1}
-.frase{margin:10px 0 14px}
-.barra{height:14px;background:var(--line);border-radius:99px;overflow:hidden;position:relative}
-.barra i{display:block;height:100%;background:var(--acc);border-radius:99px}
-.marca{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg)}
-.leyenda{display:flex;justify-content:space-between;gap:8px;color:var(--mut);font-size:13px;margin-top:6px}
-.sem{display:flex;gap:12px;align-items:flex-start;margin-top:20px;padding:14px;border-radius:12px;background:var(--bg)}
-.punto{flex:none;width:14px;height:14px;border-radius:50%;margin-top:6px}
+.atajos button{border:1px solid var(--line);background:transparent;color:var(--fg);padding:7px 14px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+.atajos button:hover{border-color:var(--acc);color:var(--acc)}
+
+.resp{margin-top:40px}
+.donde{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:0 0 6px}
+h2.ent{font:600 clamp(22px,4.6vw,30px)/1.2 var(--serif);letter-spacing:-.015em;text-transform:none;color:var(--fg);margin:0 0 18px}
+.dicho{font:400 clamp(30px,7vw,46px)/1.12 var(--serif);letter-spacing:-.02em;margin:0 0 14px}
+.dicho b{font-weight:600;color:var(--acc)}
+.comp{font-size:17px;margin:0 0 6px}
+.corte{font:400 12.5px/1.5 var(--mono);color:var(--mut);margin:0}
+.acciones{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
+.btn{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:9px 16px;border-radius:99px;font:500 14px var(--sans);text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--acc)}.btn.p{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+
+h2{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:44px 0 6px}
+.nota{color:var(--mut);font-size:14px;margin:0 0 18px;max-width:60ch}
+
+/* El quipu: cuerda principal con un nudo por mes, y cuerdas que cuelgan por función */
+.quipu{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 16px 18px;overflow-x:auto}
+.quipu-in{min-width:520px}
+.principal{position:relative;display:grid;grid-template-columns:repeat(12,1fr);align-items:center;height:56px;margin-bottom:0}
+.principal::before{content:"";position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;background:var(--hilo)}
+.mes{position:relative;display:grid;place-items:center;height:100%}
+.nudo{position:absolute;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--card)}
+.anillo{position:absolute;border-radius:50%;border:2px solid var(--fg);opacity:.8;z-index:1}
+.mes.nada .nudo{display:none}
+.nombres{display:grid;grid-template-columns:repeat(12,1fr);font:400 11px var(--mono);color:var(--mut);text-align:center;margin:2px 0 12px}
+.leyenda{display:flex;flex-wrap:wrap;gap:16px;font:400 12px var(--mono);color:var(--mut);margin:0 0 20px}
+.leyenda i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.leyenda .n{background:var(--acc)}.leyenda .a{border:2px solid var(--fg)}
+.colgantes{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;align-items:start;border-top:1px dashed var(--line);padding-top:16px}
+.col{display:flex;flex-direction:column;align-items:center;text-align:center}
+.hilo{position:relative;width:var(--w,5px);height:132px;border-radius:3px;background:var(--hilo)}
+.hilo i{position:absolute;left:0;right:0;top:0;border-radius:3px;background:var(--acc);height:var(--p)}
+.hilo b{position:absolute;left:50%;top:var(--p);width:calc(var(--w,5px) + 9px);height:calc(var(--w,5px) + 9px);margin:-6px 0 0 calc(-.5 * (var(--w,5px) + 9px));border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--card)}
+.col .v{font:600 18px var(--serif);margin-top:12px}
+.col .f{font-size:12.5px;line-height:1.3;color:var(--mut);margin-top:2px;overflow-wrap:anywhere}
+.col .m{font:400 11px var(--mono);color:var(--mut);margin-top:3px}
+
+.sem{display:flex;gap:14px;align-items:flex-start;margin-top:26px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.punto{flex:none;width:16px;height:16px;border-radius:50%;margin-top:5px}
 .verde{background:var(--verde)}.ambar{background:var(--ambar)}.rojo{background:var(--rojo)}
-.sem p{margin:0}.sem small{color:var(--mut);display:block;margin-top:4px;font-size:13px;line-height:1.4}
-h3{font-size:15px;margin:26px 0 10px;letter-spacing:.01em}
-svg{width:100%;height:auto;display:block}
-.fn{display:grid;grid-template-columns:1fr auto;gap:2px 12px;margin-bottom:12px;font-size:15px}
-.fn .barra{grid-column:1/-1;height:8px}.fn span:last-child{color:var(--mut);text-align:right}
-.pie{color:var(--mut);font-size:13px;margin-top:36px;line-height:1.5}
-.pie a{color:inherit}
-.cuadro{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:var(--mut)}
-.cuadro b{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.sem p{margin:0}.sem small{display:block;color:var(--mut);margin-top:4px;font-size:13px;line-height:1.45}
+
+.obra{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px}
+.obra.ver{border-color:var(--ambar)}
+.obra h3{font:500 15px/1.4 var(--sans);margin:0 0 12px}
+.dos{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center;font-size:13px;color:var(--mut)}
+.dos .pista{height:8px;border-radius:99px;background:var(--hilo);overflow:hidden}.dos .pista i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.dos .pista.f i{background:var(--fg);opacity:.75}
+.dos span:last-child{font:500 13px var(--mono);color:var(--fg);text-align:right}
+.aviso{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--bg);font-size:13.5px;line-height:1.5}
+.cod{font:400 11.5px var(--mono);color:var(--mut);margin:10px 0 0}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;line-height:1.6}
+footer a{color:inherit}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font:400 12.5px/1.5 var(--mono);overflow-x:auto;color:var(--fg);margin:10px 0}
+@media (max-width:560px){header{margin-bottom:30px}.resp{margin-top:30px}.hilo{height:112px}}
+@media (prefers-reduced-motion:no-preference){.hilo i{transition:height .7s cubic-bezier(.22,1,.36,1)}.nudo,.anillo{transition:width .5s,height .5s}}
 </style>
 </head>
 <body>
 <main>
-<header><b>quipu</b><span>cuentas claras del presupuesto público</span></header>
+<header>
+  <a class="logo" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--acc)"/><path d="M6 9h20M11 9v15M16 9v10M21 9v13" stroke="var(--acc-fg)" stroke-width="2.4"/><circle cx="11" cy="24" r="2.5" fill="var(--acc-fg)"/><circle cx="16" cy="19" r="2.5" fill="var(--acc-fg)"/><circle cx="21" cy="22" r="2.5" fill="var(--acc-fg)"/></svg>quipu</a>
+  <nav><a href="#datos">datos</a><a href="https://github.com/crafter-station/quipu">github</a></nav>
+</header>
 
-<h1>¿Tu municipalidad ya gastó lo que le tocaba?</h1>
-<p class="sub">Escribe el nombre de tu distrito, provincia o región y mira cuánto del presupuesto del año ya se usó.</p>
+<h1>¿Tu municipalidad ya gastó <em>lo que le tocaba</em>?</h1>
+<p class="sub">Escribe el nombre de tu distrito, provincia o región. Te contamos cuánto del dinero público de este año ya se usó, en qué y en qué obras.</p>
 
 <div class="buscar">
-  <input id="q" type="search" placeholder="Ej.: Acoria, Huancavelica, Cusco…" autocomplete="off" aria-label="Buscar municipalidad o región">
-  <div id="lista" class="lista" hidden></div>
+  <input id="q" type="search" placeholder="Ej.: Acoria o Cusco" autocomplete="off" aria-label="Buscar municipalidad o región" role="combobox" aria-expanded="false" aria-controls="lista">
+  <div id="lista" class="lista" role="listbox" hidden></div>
 </div>
 <div class="atajos" id="atajos"></div>
 
-<div id="resultado" aria-live="polite"></div>
+<section class="resp" id="resultado" aria-live="polite"></section>
 
-<p class="pie" id="pie"></p>
+<footer id="datos"></footer>
 </main>
 
 <script type="module">
-import { crear, buscar, avance, agregar, filtrar, semaforo, porFuncion, soles, pct, MESES, NIVELES } from "../src/core.mjs";
+import { crear, buscar, avance, agregar, filtrar, semaforo, porFuncion, obrasDe, soles, pct, MESES, NIVELES } from "../src/core.mjs";
 
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const titulo = (s) => s.toLowerCase().replace(/(^|[\s(-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase()).replace(/\b(De|Del|La|Las|Los|Y)\b/g, (m) => m.toLowerCase());
-let q;
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const menores = new Set(["de", "del", "la", "las", "los", "y", "el", "en", "a", "al", "para", "por", "con"]);
+const titulo = (s) => String(s ?? "").toLowerCase().replace(/\p{L}[\p{L}'.]*/gu, (w, i) => (i > 0 && menores.has(w) ? w : w[0].toUpperCase() + w.slice(1)));
+const coma = (n, d = 1) => n.toFixed(d).replace(".", ",");
 
+let q;
 try {
-  q = crear(await (await fetch("../data/quipu.json")).json());
+  const [a, b] = await Promise.all([fetch("../data/quipu.json"), fetch("../data/obras.json").catch(() => null)]);
+  q = crear(await a.json(), b && b.ok ? await b.json() : null);
 } catch {
-  $("resultado").innerHTML = '<div class="card">No pude cargar los datos. Abre esta página desde un servidor (por ejemplo <code>node serve.mjs</code>).</div>';
+  $("resultado").innerHTML = "<p>No pude cargar los datos. Si abriste el archivo directamente, ábrelo desde un servidor (<code>node serve.mjs</code>).</p>";
   throw new Error("sin datos");
 }
 
 const anio = q.datos.anios.at(-1), previo = String(Number(anio) - 1), hasta = q.mesCerrado;
-$("pie").innerHTML = `Fuente: <a href="https://datosabiertos.mef.gob.pe">datos abiertos del MEF</a> (Consulta Amigable de Gasto), actualizados al ${q.datos.corte}. “Gastado” es el gasto <i>devengado</i> (ya comprometido y reconocido) y “presupuesto” es el PIM, el presupuesto vigente del año. Se cuenta hasta ${MESES[hasta - 1]} porque el mes en curso aún no termina. quipu no es un sitio oficial del Estado.`;
+const fecha = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("es-PE", { day: "numeric", month: "long", year: "numeric" });
+const claveDe = (e) => e.clave;
 
-const ATAJOS = [["Todo el país", null], ["Huancavelica", "huancavelica"], ["Cusco", "cusco"], ["Puno", "puno"], ["Ayacucho", "ayacucho"], ["Lima", "lima"]];
-$("atajos").innerHTML = ATAJOS.map(([t, v]) => `<button data-v="${v ?? ""}">${t}</button>`).join("");
-$("atajos").onclick = (e) => { const v = e.target.dataset?.v; if (v === undefined) return; v ? mostrarDepto(v) : mostrarPais(); };
+$("datos").innerHTML = `
+  <p><b>De dónde sale esto.</b> Gasto: <a href="https://datosabiertos.mef.gob.pe">datos abiertos del MEF</a> (Consulta Amigable de Gasto), al ${fecha(q.datos.corte)}. Obras: Invierte.pe, ${q.obras ? "al " + fecha(q.obras.corte) : "sin datos"}.
+  “Gastado” es el gasto <i>devengado</i> (ya comprometido y reconocido, no necesariamente pagado). “Presupuesto” es el PIM: el presupuesto vigente del año, con sus modificaciones. Se cuenta hasta ${MESES[hasta - 1]} porque el mes en curso aún no termina.</p>
+  <p><b>quipu no es un sitio oficial del Estado.</b> Es un proyecto abierto de <a href="https://github.com/crafter-station">Crafter Station</a>. Si ves un error, avísanos en GitHub.</p>
+  <p>¿Programas o usas IA? Todo esto también está en la línea de comandos y como servidor MCP:</p>
+  <pre>npx github:crafter-station/quipu avance acoria\nnpx github:crafter-station/quipu ranking --nivel gl --depto huancavelica --peores</pre>`;
 
-function lineas(a, b) {
-  const W = 640, H = 220, L = 38, B = 24, T = 10, R = 8;
-  const acum = (arr) => arr.reduce((o, x, i) => (o.push((o[i - 1] ?? 0) + x), o), []);
-  const sa = acum(a.porMes).slice(0, hasta).map((v) => (a.pim ? (100 * v) / a.pim : 0));
-  const sb = b ? acum(b.porMes).map((v) => (b.pim ? (100 * v) / b.pim : 0)) : null;
-  const max = Math.max(100, ...(sb ?? []), ...sa);
-  const x = (i) => L + (i * (W - L - R)) / 11, y = (v) => T + (H - T - B) * (1 - v / max);
-  const path = (s) => s.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
-  const grid = [0, 25, 50, 75, 100].map((g) => `<line x1="${L}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(g) + 4}" text-anchor="end" font-size="11" fill="var(--mut)">${g}%</text>`).join("");
-  const meses = MESES.map((m, i) => (i % 2 === 0 ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--mut)">${m}</text>` : "")).join("");
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Avance acumulado mes a mes">${grid}${meses}${sb ? `<path d="${path(sb)}" fill="none" stroke="var(--mut)" stroke-width="2" stroke-dasharray="5 4"/>` : ""}<path d="${path(sa)}" fill="none" stroke="var(--acc)" stroke-width="3"/></svg>
-  <div class="cuadro"><span><b style="background:var(--acc)"></b>${anio}</span>${sb ? `<span><b style="background:var(--mut)"></b>${previo}</span>` : ""}</div>`;
+/* ---------- el quipu ---------- */
+function quipu(a, p, fs) {
+  const todos = [...a.porMes.slice(0, hasta), ...(p ? p.porMes : [])];
+  const max = Math.max(...todos, 1);
+  const tam = (v) => (v > 0 ? 7 + 21 * Math.sqrt(v / max) : 0);
+  const meses = MESES.map((m, i) => {
+    const v = i < hasta ? a.porMes[i] : 0, w = p ? p.porMes[i] : 0;
+    return `<div class="mes${i >= hasta ? " nada" : ""}" title="${m}: ${soles(v)} este año${p ? ` · ${soles(w)} el año pasado` : ""}">
+      ${v > 0 ? `<span class="nudo" style="width:${tam(v)}px;height:${tam(v)}px"></span>` : ""}${p && w > 0 ? `<span class="anillo" style="width:${tam(w)}px;height:${tam(w)}px"></span>` : ""}</div>`;
+  }).join("");
+  const maxPim = Math.max(...fs.map((f) => f.pim), 1);
+  const cols = fs.map((f) => {
+    const w = 3 + 6 * Math.sqrt(f.pim / maxPim);
+    const pc = Math.min(f.pct ?? 0, 100);
+    return `<div class="col" title="${esc(titulo(f.nombre))}: ${soles(f.pim)} de presupuesto">
+      <div class="hilo" style="--w:${w.toFixed(1)}px;--p:${pc}%"><i></i><b></b></div>
+      <div class="v">${Math.round(pc)}%</div><div class="f">${esc(titulo(f.nombre))}</div><div class="m">${soles(f.pim)}</div></div>`;
+  }).join("");
+  return `<div class="quipu"><div class="quipu-in">
+    <div class="principal">${meses}</div>
+    <div class="nombres">${MESES.map((m) => `<span>${m}</span>`).join("")}</div>
+    <div class="leyenda"><span><i class="n"></i>${anio}: lo gastado cada mes</span>${p ? `<span><i class="a"></i>${previo}: el mismo mes del año pasado</span>` : ""}</div>
+    <div class="colgantes">${cols}</div>
+  </div></div>`;
 }
 
-function tarjeta({ titulo: t, donde, ents, ent }) {
+/* ---------- obras ---------- */
+function obras(ent) {
+  const os = obrasDe(ent).slice(0, 6);
+  if (!q.obras || !os.length) return "";
+  const html = os.map((o) => {
+    const ver = o.fisico !== null && o.pct !== null && o.pct >= 60 && o.fisico <= 20;
+    return `<article class="obra${ver ? " ver" : ""}">
+      <h3>${esc(titulo(o.nombre.length > 150 ? o.nombre.slice(0, 147) + "…" : o.nombre))}</h3>
+      <div class="dos">
+        <span>Gastado del presupuesto de este año (${soles(o.pim)})</span><span class="pista"><i style="width:${Math.min(o.pct ?? 0, 100)}%"></i></span><span>${o.pct === null ? "—" : Math.round(o.pct) + " %"}</span>
+        <span>Avance físico que declara la entidad</span><span class="pista f"><i style="width:${Math.min(o.fisico ?? 0, 100)}%"></i></span><span>${o.fisico === null ? "sin dato" : coma(o.fisico) + " %"}</span>
+      </div>
+      ${ver ? `<p class="aviso"><b>Vale la pena preguntar.</b> Gastó ${Math.round(o.pct)} de cada 100 soles de este año, pero la entidad declara ${coma(o.fisico)} % de avance físico. Puede ser solo un retraso en el registro; la entidad es quien puede explicarlo.</p>` : ""}
+      <p class="cod">Código Invierte.pe ${esc(o.codigo)}</p></article>`;
+  }).join("");
+  return `<h2>Las obras más grandes de este año</h2><p class="nota">Las ${os.length} inversiones con más presupuesto. El avance físico no lo mide quipu: lo declara cada entidad al MEF.</p>${html}`;
+}
+
+/* ---------- tarjeta de respuesta ---------- */
+function respuesta({ donde, nombre, ents, ent, enlace }) {
   const a = agregar(q, ents, anio, hasta), p = agregar(q, ents, previo, hasta);
   const sem = ent ? semaforo(q, ent, anio, hasta) : null;
-  const mismo = p.pct !== null && a.pct !== null ? a.pct - p.pct : null;
-  const dif = mismo === null ? "" : Math.abs(mismo) < 0.5 ? `Va igual que el año pasado a esta fecha (${pct(p.pct)}).` : mismo > 0 ? `Va ${mismo.toFixed(1).replace(".", ",")} puntos por delante del año pasado a esta fecha (${pct(p.pct)}).` : `Va ${Math.abs(mismo).toFixed(1).replace(".", ",")} puntos por detrás del año pasado a esta fecha (${pct(p.pct)}).`;
-  const fs = ent ? porFuncion(q, ent, anio).filter((f) => f.pim > 0).slice(0, 6) : [];
-  const SEMT = { verde: "Está entre las que más avanzaron", ambar: "Está en el término medio", rojo: "Está entre las que menos avanzaron" };
-  return `<section class="card">
-    <h2>${esc(t)}</h2><p class="donde">${esc(donde)}</p>
-    <div class="grande">${a.pct === null ? "—" : Math.round(a.pct) + " %"}</div>
-    <p class="frase">${a.pim ? `Ha gastado <b>${soles(a.devengado)}</b> de los <b>${soles(a.pim)}</b> que tiene este año.` : "Esta entidad no tiene presupuesto este año."} ${esc(dif)}</p>
-    <div class="barra"><i style="width:${Math.min(a.pct ?? 0, 100)}%"></i></div>
-    <div class="leyenda"><span>0 %</span><span>hasta ${MESES[hasta - 1]} ${anio}</span><span>100 %</span></div>
-    ${sem ? `<div class="sem"><span class="punto ${sem.color}"></span><div><p><b>${SEMT[sem.color]}</b> de las ${sem.de.toLocaleString("es-PE")} entidades del mismo nivel de gobierno: ${sem.mejorQue} % de ellas ha avanzado menos.</p><small>Es una comparación, no un veredicto: algunas entidades tienen obras grandes que se pagan al final del año. Sirve para saber dónde preguntar.</small></div></div>` : ""}
-    <h3>Avance mes a mes</h3>${lineas(a, p.pim ? p : null)}
-    ${fs.length ? `<h3>En qué se gasta</h3>${fs.map((f) => `<div class="fn"><span>${esc(titulo(f.nombre))}</span><span>${soles(f.pim)} · ${pct(f.pct)}</span><div class="barra"><i style="width:${Math.min(f.pct ?? 0, 100)}%"></i></div></div>`).join("")}` : ""}
-  </section>`;
+  const de100 = a.pct === null ? null : Math.round(a.pct);
+  const dif = a.pct !== null && p.pct !== null ? a.pct - p.pct : null;
+  const comp = dif === null ? "" : Math.abs(dif) < 0.5 ? `A esta misma fecha del año pasado iba igual (${coma(p.pct)} %).`
+    : dif > 0 ? `A esta fecha del año pasado iba en ${Math.round(p.pct)}: hoy va <b>${coma(dif)} puntos más adelante</b>.`
+    : `A esta fecha del año pasado iba en ${Math.round(p.pct)}: hoy va <b>${coma(-dif)} puntos más atrás</b>.`;
+  const fs = porFuncion(q, ent ?? { ids: ents.flatMap((e) => e.ids) }, anio).filter((f) => f.pim > 0).slice(0, 8);
+  const SEMT = { verde: "Entre las que más han avanzado", ambar: "En el término medio", rojo: "Entre las que menos han avanzado" };
+  const frase = a.pim ? `${nombre} ya gastó ${de100} de cada 100 soles que tiene este año.` : `${nombre} no tiene presupuesto este año.`;
+  const url = location.origin + location.pathname + (enlace ? "#" + enlace : "");
+  const wa = "https://wa.me/?text=" + encodeURIComponent(`${frase} Míralo aquí: ${url}`);
+  return `
+    <p class="donde">${esc(donde)}</p>
+    <h2 class="ent">${esc(nombre)}</h2>
+    <p class="dicho">${a.pim ? `Ya gastó <b>${de100} de cada 100</b> soles que tiene este año.` : "No tiene presupuesto este año."}</p>
+    <p class="comp">${comp}</p>
+    <p class="corte">${soles(a.devengado)} gastados de ${soles(a.pim)} · hasta ${MESES[hasta - 1]} ${anio} · datos al ${fecha(q.datos.corte)}</p>
+    <div class="acciones"><a class="btn p" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a><button class="btn" id="copiar" type="button">Copiar enlace</button></div>
+    ${sem ? `<div class="sem"><span class="punto ${sem.color}"></span><div><p><b>${SEMT[sem.color]}</b> de las ${sem.de.toLocaleString("es-PE")} entidades de su mismo nivel de gobierno: ${sem.mejorQue} % de ellas ha avanzado menos.</p><small>Es una comparación, no un veredicto. Algunas entidades tienen obras grandes que se pagan a fin de año. Sirve para saber dónde preguntar.</small></div></div>` : ""}
+    <h2>Así se ve su quipu</h2>
+    <p class="nota">Arriba, cada nudo es un mes: mientras más grande, más se gastó. Abajo, cada cuerda es un tema (educación, salud, transporte…) y se llena según cuánto de su presupuesto ya se gastó.</p>
+    ${quipu(a, p.pim ? p : null, fs)}
+    ${ent ? obras(ent) : ""}`;
 }
 
-function mostrarPais() { $("resultado").innerHTML = tarjeta({ titulo: "Todo el Perú", donde: "Gobierno Nacional, regionales y locales", ents: q.entidades }); }
-function mostrarDepto(d) {
-  const ents = filtrar(q, { depto: d });
-  $("resultado").innerHTML = tarjeta({ titulo: titulo(d), donde: "Todas las entidades del departamento: Gobierno Nacional con obras ahí, regional y municipalidades", ents });
+const PAIS = { donde: "Todo el Perú", nombre: "Todo el Estado peruano", get ents() { return q.entidades; }, enlace: "" };
+function mostrar(r, scroll = false) {
+  $("resultado").innerHTML = respuesta(r);
+  $("lista").hidden = true; $("q").setAttribute("aria-expanded", "false");
+  $("copiar")?.addEventListener("click", async (e) => {
+    try { await navigator.clipboard.writeText(location.origin + location.pathname + (r.enlace ? "#" + r.enlace : "")); e.target.textContent = "¡Enlace copiado!"; } catch { e.target.textContent = "Copia la dirección del navegador"; }
+  });
+  if (scroll) $("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
 }
-function mostrarEnt(e) {
-  const donde = [NIVELES[e.nivel], e.nivel === "GL" ? `${titulo(e.provincia)}, ${titulo(e.depto)}` : e.depto && e.nivel === "GR" ? titulo(e.depto) : ""].filter(Boolean).join(" · ");
-  $("resultado").innerHTML = tarjeta({ titulo: titulo(e.nombre), donde, ents: [e], ent: e });
-  $("lista").hidden = true;
-  scrollTo({ top: $("resultado").offsetTop - 20, behavior: "smooth" });
+const deEntidad = (e) => ({ donde: [NIVELES[e.nivel], e.nivel === "GL" ? `${titulo(e.provincia)}, ${titulo(e.depto)}` : e.nivel === "GR" ? titulo(e.depto) : ""].filter(Boolean).join(" · "), nombre: titulo(e.nombre), ents: [e], ent: e, enlace: "e=" + encodeURIComponent(e.clave) });
+const deDepto = (d) => ({ donde: "Departamento", nombre: titulo(d), ents: filtrar(q, { depto: d }), enlace: "d=" + encodeURIComponent(d) });
+
+function desdeHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("e")) { const e = q.entidades.find((x) => x.clave === h.get("e")); if (e) return mostrar(deEntidad(e)); }
+  if (h.get("d")) { const d = h.get("d"); if (filtrar(q, { depto: d }).length) return mostrar(deDepto(d)); }
+  mostrar(PAIS);
 }
+
+const ATAJOS = [["Todo el país", ""], ["Huancavelica", "huancavelica"], ["Cusco", "cusco"], ["Puno", "puno"], ["Ayacucho", "ayacucho"], ["Lima", "lima"]];
+$("atajos").innerHTML = ATAJOS.map(([t, v]) => `<button type="button" data-v="${v}">${t}</button>`).join("");
+$("atajos").onclick = (e) => { const v = e.target.dataset?.v; if (v === undefined) return; v ? (location.hash = "d=" + v) : history.pushState(null, "", location.pathname) || desdeHash(); };
 
 let sugeridas = [];
 $("q").addEventListener("input", () => {
   const t = $("q").value;
   if (t.trim().length < 2) { $("lista").hidden = true; return; }
   sugeridas = buscar(q, t).sort((a, b) => (a.nivel === "GN") - (b.nivel === "GN") || a.nombre.length - b.nombre.length).slice(0, 8);
-  $("lista").innerHTML = sugeridas.map((e, i) => `<button data-i="${i}">${esc(titulo(e.nombre))}<small>${NIVELES[e.nivel]} · ${esc(titulo(e.depto || ""))}</small></button>`).join("") || '<button disabled>Sin resultados. Prueba con solo el nombre del distrito.</button>';
-  $("lista").hidden = false;
+  $("lista").innerHTML = sugeridas.map((e, i) => `<button type="button" role="option" data-i="${i}">${esc(titulo(e.nombre))}<small>${NIVELES[e.nivel]} · ${esc(titulo(e.depto || ""))}</small></button>`).join("") || '<button type="button" disabled>No encontré nada. Prueba solo con el nombre del distrito.</button>';
+  $("lista").hidden = false; $("q").setAttribute("aria-expanded", "true");
 });
-$("lista").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) mostrarEnt(sugeridas[b.dataset.i]); };
-$("q").addEventListener("keydown", (e) => { if (e.key === "Enter" && sugeridas[0]) mostrarEnt(sugeridas[0]); });
+$("lista").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) { location.hash = "e=" + encodeURIComponent(sugeridas[b.dataset.i].clave); $("q").blur(); $("resultado").scrollIntoView({ behavior: "smooth" }); } };
+$("q").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && sugeridas[0] && !$("lista").hidden) { location.hash = "e=" + encodeURIComponent(sugeridas[0].clave); $("q").blur(); }
+  if (e.key === "ArrowDown") $("lista").querySelector("button")?.focus();
+  if (e.key === "Escape") $("lista").hidden = true;
+});
+$("lista").addEventListener("keydown", (e) => { const bs = [...$("lista").querySelectorAll("button")], i = bs.indexOf(document.activeElement); if (e.key === "ArrowDown") { bs[i + 1]?.focus(); e.preventDefault(); } if (e.key === "ArrowUp") { (bs[i - 1] ?? $("q")).focus(); e.preventDefault(); } });
 document.addEventListener("click", (e) => { if (!e.target.closest(".buscar")) $("lista").hidden = true; });
-
-mostrarPais();
+addEventListener("hashchange", desdeHash);
+desdeHash();
 </script>
 </body>
 </html>

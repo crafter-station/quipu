@@ -19,3 +19,23 @@ test("el semáforo da un color y una posición válida", () => {
   assert.ok(["verde", "ambar", "rojo"].includes(s.color));
   assert.ok(s.posicion >= 1 && s.posicion <= s.de);
 });
+
+import { consultaAvance, consultaObras, ErrorConsulta, cargar } from "../src/consultas.mjs";
+
+test("consultas: avance de una entidad trae semáforo y año anterior", () => {
+  const r = consultaAvance(cargar(), { entidad: "municipalidad distrital de acoria" });
+  assert.ok(r.avancePct > 0 && r.avancePct <= 100);
+  assert.ok(r.mismoMesAnioAnterior.avancePct > 0);
+  assert.ok(["verde", "ambar", "rojo"].includes(r.semaforoRelativo.color));
+});
+test("consultas: un nombre ambiguo no adivina, pide precisión", () => {
+  assert.throws(() => consultaAvance(cargar(), { entidad: "santa rosa" }), ErrorConsulta);
+});
+test("consultas: las obras traen código y avance físico (o null)", () => {
+  const r = consultaObras(cargar(), { entidad: "gobierno regional del departamento de huancavelica" });
+  assert.ok(r.obras.length > 0 && r.obras.every((o) => o.codigoInvierte && "avanceFisicoDeclaradoPct" in o));
+});
+test("el nombre con mala codificación y el bueno dan la misma llave", async () => {
+  const { doblar } = await import("../src/core.mjs");
+  assert.equal(doblar("MUNICIPALIDAD DISTRITAL DE MAÑAZO"), doblar("MUNICIPALIDAD DISTRITAL DE MA�AZO"));
+});
