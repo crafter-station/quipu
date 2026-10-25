@@ -29,6 +29,7 @@ jobs:
       - name: Exportar
         run: |
           python -I scripts/exportar.py
+          python -I scripts/municipal_ubigeo.py $(ls data/raw/*-Gasto-*.zip | sort -r)
           python -I scripts/obras.py data/raw/detalle-inversiones.csv "$(date -u +%F)"
       - name: Probar
         run: node --test test/core.test.mjs
@@ -36,6 +37,6 @@ jobs:
         run: |
           git config user.name "quipu-bot"
           git config user.email "quipu-bot@users.noreply.github.com"
-          git add data/quipu.json data/obras.json
+          git add data/quipu.json data/obras.json data/municipal-ubigeo.json
           git diff --cached --quiet || git commit -m "datos: $(date -u +%F)"
           git push
