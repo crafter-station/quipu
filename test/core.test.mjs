@@ -39,3 +39,11 @@ test("el nombre con mala codificación y el bueno dan la misma llave", async () 
   const { doblar } = await import("../src/core.mjs");
   assert.equal(doblar("MUNICIPALIDAD DISTRITAL DE MAÑAZO"), doblar("MUNICIPALIDAD DISTRITAL DE MA�AZO"));
 });
+
+test("ficha: Huancavelica trae las cinco capas con las cifras de la web", async () => {
+  const { cargar, consultaFicha } = await import("../src/consultas.mjs");
+  const f = consultaFicha(cargar(), "huancavelica", { depto: "huancavelica" });
+  assert.equal(f.ubigeo, "090101");
+  assert.deepEqual(f.capas.map((c) => c.texto), ["17 %", "9 %", "8", "5", "47"]);
+  assert.throws(() => consultaFicha(cargar(), "san juan"), /Hay 4 distritos/);
+});

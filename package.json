@@ -4,7 +4,7 @@
   "description": "¿Cuánto del presupuesto público del Perú ya se gastó? CLI, MCP-ready JSON y web simple, con datos abiertos del MEF",
   "type": "module",
   "bin": { "quipu": "src/cli.mjs" },
-  "files": ["src", "web", "data/quipu.json", "serve.mjs"],
+  "files": ["src", "web", "data/quipu.json", "data/distritos.json", "data/territorio-ubigeo.json", "data/municipal-ubigeo.json", "serve.mjs"],
   "scripts": { "web": "node serve.mjs", "test": "node --test test/core.test.mjs" },
   "license": "MIT",
   "author": { "name": "Lizeth Riveros", "url": "https://github.com/LizethRiveros" }

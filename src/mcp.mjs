@@ -1,7 +1,7 @@
 // Servidor MCP mínimo de quipu (stdio, JSON-RPC por líneas, sin dependencias).
 // Config en un cliente MCP: { "command": "npx", "args": ["-y", "@lizethriveros/quipu", "mcp"] }
 import { createInterface } from "node:readline";
-import { cargar, consultaAvance, consultaBuscar, consultaRanking, consultaFunciones, consultaObras, ErrorConsulta } from "./consultas.mjs";
+import { cargar, consultaAvance, consultaBuscar, consultaRanking, consultaFunciones, consultaObras, consultaFicha, ErrorConsulta } from "./consultas.mjs";
 
 const q = cargar();
 const filtros = {
@@ -17,6 +17,7 @@ const HERRAMIENTAS = [
   { nombre: "ranking_avance", descripcion: "Entidades ordenadas por avance del gasto (solo las de presupuesto ≥ S/ 1 millón).", props: { ...filtros, peores: { type: "boolean", description: "Primero las de menos avance" }, limit: { type: "number" } }, req: [], run: (a) => consultaRanking(q, a) },
   { nombre: "gasto_por_funcion", descripcion: "En qué funciones (educación, salud, transporte...) tiene presupuesto una entidad y cuánto avanzó en cada una.", props: { entidad, ...filtros }, req: ["entidad"], run: (a) => consultaFunciones(q, a) },
   { nombre: "obras_de_entidad", descripcion: "Las obras (inversiones) con más presupuesto del año de una entidad, su gasto y el avance físico que declara. 'paraVerificar' es una señal para revisar, no una acusación.", props: { entidad, ...filtros }, req: ["entidad"], run: (a) => consultaObras(q, a) },
+  { nombre: "ficha_distrito", descripcion: "Las cinco capas de un distrito: gasto en obras, señal 4G, emergencias, zonas críticas e índice digital, cada una con su posición frente a los demás distritos del país.", props: { distrito: { type: "string", description: "Nombre del distrito, ej. 'huancavelica'" }, depto: filtros.depto }, req: ["distrito"], run: (a) => consultaFicha(q, a.distrito, a) },
 ];
 
 const responder = (id, result) => process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id, result }) + "\n");

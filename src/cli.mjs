@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { cargar, consultaAvance, consultaBuscar, consultaRanking, consultaFunciones, consultaObras, ErrorConsulta } from "./consultas.mjs";
+import { cargar, consultaAvance, consultaBuscar, consultaRanking, consultaFunciones, consultaObras, consultaFicha, ErrorConsulta } from "./consultas.mjs";
 import { soles, pct } from "./core.mjs";
 
 const AYUDA = `quipu — ¿cuánto del presupuesto público ya se gastó?
@@ -9,6 +9,7 @@ Uso:
   quipu buscar <texto>         encuentra entidades por nombre, provincia o distrito
   quipu ranking                entidades ordenadas por avance
   quipu funciones <entidad>    en qué se gasta (educación, salud, transporte...)
+  quipu ficha <distrito>       las cinco capas de un distrito, como hilos de un quipu
   quipu obras <entidad>        obras con más presupuesto del año y su avance declarado
   quipu mcp                    servidor MCP para agentes de IA (stdio)
 
@@ -63,6 +64,29 @@ if (cmd === "mcp") {
         const s = a.semaforoRelativo;
         if (s) t += `\n${SEM[s.color]} Más avance que el ${s.mejorQue} % de sus pares (puesto ${s.posicion} de ${s.de} del mismo nivel)\n`;
         return t + `\nDatos del MEF al ${a.datosAl}. El mes en curso no se cuenta hasta que termina.`;
+      });
+    } else if (cmd === "ficha") {
+      salida(consultaFicha(q, texto, opts), (f) => {
+        // Un quipu en texto: el cordón arriba y un hilo por capa; más largo = más arriba frente a los demás distritos.
+        const ALTO = 8, ANCHO = 15, SANGRIA = "  ";
+        const hilo = (c) => (c.largo === null ? 1 : 2 + Math.round(c.largo * (ALTO - 2)));
+        const alto = Math.max(...f.capas.map(hilo));
+        const fila = (celda) => SANGRIA + f.capas.map(celda).join("");
+        const lineas = [SANGRIA + "━".repeat(ANCHO * f.capas.length - 2)];
+        for (let y = 1; y <= alto; y++) {
+          lineas.push(fila((c) => { const n = hilo(c); return pad(y < n ? "│" : y === n ? (c.largo === null ? "○" : "●") : "", ANCHO); }));
+        }
+        lineas.push(fila((c) => pad(c.texto, ANCHO)));
+        lineas.push(fila((c) => pad(c.etiqueta, ANCHO)));
+        return [
+          f.distrito,
+          `${f.provincia}, ${f.departamento}`,
+          "",
+          ...lineas,
+          "",
+          "Más largo el hilo, más arriba está frente a los demás distritos del país.",
+          `Datos al ${f.datosAl}. Gasto = devengado / presupuesto de inversión del año.`,
+        ].join("\n");
       });
     } else if (cmd === "ranking") {
       salida(consultaRanking(q, opts), (r) => `Entidades con presupuesto ≥ S/ 1 millón\n\n` + r.map((x) => `${padL(x.puesto, 3)}  ${padL(pct(x.avancePct), 8)}  ${padL(soles(x.presupuestoSoles), 24)}  ${pad(x.entidad, 55)} ${x.depto}`).join("\n"));

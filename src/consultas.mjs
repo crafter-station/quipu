@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { crear, buscar, filtrar, avance, agregar, ranking, semaforo, porFuncion, obrasDe, normalizar, MESES, NIVELES } from "./core.mjs";
 
 const datos = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+const leerJson = (f) => JSON.parse(readFileSync(join(datos, f), "utf8"));
 
 export function cargar() {
   const leer = (f) => JSON.parse(readFileSync(join(datos, f), "utf8"));
@@ -82,4 +83,42 @@ export function consultaObras(q, { entidad, nivel, depto, limit = 8 }) {
     paraVerificar: o.fisico !== null && o.pct !== null && o.pct >= 60 && o.fisico <= 20,
   }));
   return { entidad: ent.nombre, datosAl: q.obras.corte, nota: "Avance físico lo declara la propia entidad al MEF. 'paraVerificar' = gastó 60 % o más de su presupuesto del año pero declara 20 % o menos de avance físico; puede ser un retraso de registro, no necesariamente un problema.", obras };
+}
+
+/** Ficha de un distrito: las cinco capas (gasto, señal 4G, emergencias, zonas críticas, digital) y cuánto pesa cada una frente a los demás distritos. */
+export function consultaFicha(q, texto, { depto } = {}) {
+  const dist = leerJson("distritos.json");
+  const t = normalizar(texto);
+  if (!t) throw new ErrorConsulta("Dime un distrito, por ejemplo: quipu ficha huancavelica");
+  let r = Object.entries(dist).filter(([, [n, p, d]]) => normalizar(n) === t && (!depto || normalizar(d) === normalizar(depto)));
+  if (r.length === 0) r = Object.entries(dist).filter(([, [n, p, d]]) => normalizar(`${n} ${p} ${d}`).includes(t) && (!depto || normalizar(d) === normalizar(depto)));
+  if (r.length === 0) throw new ErrorConsulta(`No encontré el distrito "${texto}".`);
+  if (r.length > 1) {
+    const lista = r.slice(0, 8).map(([, [n, p, d]]) => `${n} (${p}, ${d})`).join("; ");
+    throw new ErrorConsulta(`Hay ${r.length} distritos con "${texto}". Agrega --depto: ${lista}`);
+  }
+  const [ub, [nombre, provincia, departamento]] = r[0];
+
+  const terr = leerJson("territorio-ubigeo.json");
+  const muni = leerJson("municipal-ubigeo.json")[q.datos.anios.at(-1)] ?? {};
+  const hasta = q.mesCerrado;
+  const gasto = (u) => {
+    const v = muni[u]?.inv;
+    return v && v[0] > 0 ? v.slice(1, hasta + 1).reduce((a, b) => a + b, 0) / v[0] : undefined;
+  };
+  const capas = [
+    ["gasto", "Gasto", gasto, (v) => `${Math.round(v * 100)} %`, "del presupuesto de obras ya gastado"],
+    ["cobertura4g", "Señal 4G", (u) => (terr.cobertura[u]?.[0] ? terr.cobertura[u][1] / terr.cobertura[u][0] : undefined), (v) => `${Math.round(v * 100)} %`, "de sus centros poblados con 4G"],
+    ["emergencias", "Emergencias", (u) => terr.emergencias[u], String, "decretos de emergencia (2017-2024)"],
+    ["zonasCriticas", "Zonas críticas", (u) => terr.zonas[u], String, "zonas críticas"],
+    ["digital", "Digital", (u) => dist[u][3] ?? undefined, (v) => String(Math.round(v)), "puntos de 100 en servicios digitales"],
+  ];
+  const filas = capas.map(([clave, etiqueta, valor, fmt, detalle]) => {
+    const v = valor(ub);
+    if (v === undefined) return { clave, etiqueta, valor: null, texto: "sin dato", detalle, largo: null };
+    const todos = Object.keys(dist).flatMap((u) => { const x = valor(u); return x === undefined ? [] : [x]; });
+    const debajo = todos.filter((x) => x < v).length;
+    return { clave, etiqueta, valor: Math.round(v * 1000) / 1000, texto: fmt(v), detalle, largo: todos.length > 1 ? Math.round((debajo / (todos.length - 1)) * 100) / 100 : 0.5 };
+  });
+  return { ubigeo: ub, distrito: nombre, provincia, departamento, datosAl: q.datos.corte, nota: "El largo de cada hilo (0 a 1) es la parte de los distritos del país que quedan por debajo en esa capa.", capas: filas };
 }
