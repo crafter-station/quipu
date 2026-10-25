@@ -30,7 +30,7 @@ quipu buscar acoria                           # encontrar una entidad
 quipu ranking --nivel gl --depto huancavelica --peores
 quipu funciones "gobierno regional de huancavelica"
 quipu obras "gobierno regional de huancavelica"   # obras grandes y su avance físico declarado
-quipu ficha huancavelica                          # las cinco capas de un distrito, como hilos de un quipu
+quipu ficha huancavelica                          # habitantes y las cinco capas de un distrito, como hilos de un quipu
 quipu mcp                                     # servidor MCP (stdio)
 node serve.mjs                                # web en http://localhost:8080/web/
 ```

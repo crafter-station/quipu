@@ -120,5 +120,7 @@ export function consultaFicha(q, texto, { depto } = {}) {
     const debajo = todos.filter((x) => x < v).length;
     return { clave, etiqueta, valor: Math.round(v * 1000) / 1000, texto: fmt(v), detalle, largo: todos.length > 1 ? Math.round((debajo / (todos.length - 1)) * 100) / 100 : 0.5 };
   });
-  return { ubigeo: ub, distrito: nombre, provincia, departamento, datosAl: q.datos.corte, nota: "El largo de cada hilo (0 a 1) es la parte de los distritos del país que quedan por debajo en esa capa.", capas: filas };
+  const [habitantes, area] = [dist[ub][4] ?? null, dist[ub][5] ?? null];
+  const densidad = habitantes && area ? Math.round((habitantes / area) * 10) / 10 : null;
+  return { ubigeo: ub, distrito: nombre, provincia, departamento, habitantes, densidad, datosAl: q.datos.corte, nota: "El largo de cada hilo (0 a 1) es la parte de los distritos del país que quedan por debajo en esa capa.", capas: filas };
 }

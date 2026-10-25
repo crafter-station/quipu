@@ -1,6 +1,6 @@
 {
   "name": "@lizethriveros/quipu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "¿Cuánto del presupuesto público del Perú ya se gastó? CLI, MCP-ready JSON y web simple, con datos abiertos del MEF",
   "type": "module",
   "bin": { "quipu": "src/cli.mjs" },
