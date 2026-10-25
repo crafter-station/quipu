@@ -6,3 +6,5 @@ node_modules/
 data/municipal-ubigeo.json
 data/municipal-ubigeo.log
 data/nombres/shapes-ign.json
+data/nombres/gentilicios-wikipedia.json
+data/nombres/gent.log
