@@ -44,6 +44,8 @@ test("ficha: Huancavelica trae las cinco capas con las cifras de la web", async 
   const { cargar, consultaFicha } = await import("../src/consultas.mjs");
   const f = consultaFicha(cargar(), "huancavelica", { depto: "huancavelica" });
   assert.equal(f.ubigeo, "090101");
+  assert.equal(f.habitantes, 43556);
+  assert.equal(f.densidad, 85.3);
   assert.deepEqual(f.capas.map((c) => c.texto), ["17 %", "9 %", "8", "5", "47"]);
   assert.throws(() => consultaFicha(cargar(), "san juan"), /Hay 4 distritos/);
 });
