@@ -7,7 +7,7 @@ Tres caras con las mismas cifras:
 
 - **Web** para todos: escribes el nombre de tu distrito y lees "ya gastó 62 de cada 100 soles que tiene este año", con un dibujo de su **quipu** (un nudo por mes, una cuerda por tema) y sus obras más grandes. Se comparte por WhatsApp.
 - **CLI** para gente técnica: tablas en pantalla y `--json`.
-- **MCP** para agentes de IA: `npx -y github:crafter-station/quipu mcp`.
+- **MCP** para agentes de IA: `npx -y @lizethriveros/quipu mcp`.
 
 > Proyecto no oficial, sin relación con el MEF. "Avance" = gasto devengado / PIM (presupuesto vigente del año).
 
@@ -35,12 +35,12 @@ quipu mcp                                     # servidor MCP (stdio)
 node serve.mjs                                # web en http://localhost:8080/web/
 ```
 
-Sin instalar nada: `npx github:crafter-station/quipu avance acoria`.
+Sin instalar nada: `npx @lizethriveros/quipu avance acoria`.
 
 ### MCP
 
 ```json
-{ "mcpServers": { "quipu": { "command": "npx", "args": ["-y", "github:crafter-station/quipu", "mcp"] } } }
+{ "mcpServers": { "quipu": { "command": "npx", "args": ["-y", "@lizethriveros/quipu", "mcp"] } } }
 ```
 
 Herramientas: `buscar_entidad`, `avance_presupuesto`, `ranking_avance`, `gasto_por_funcion`, `obras_de_entidad`.
