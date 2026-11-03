@@ -81,7 +81,7 @@ if (cmd === "mcp") {
         return [
           f.distrito,
           `${f.provincia}, ${f.departamento}`,
-          ...(f.habitantes ? [`${f.habitantes.toLocaleString("es-PE")} habitantes · ${f.densidad} por km² (INEI, proyección 2025)`] : []),
+          ...(f.habitantes ? [`${f.habitantes.toLocaleString("es-PE")} habitantes · ${f.densidad} por km² (INEI, Censo 2025)`] : []),
           "",
           ...lineas,
           "",
